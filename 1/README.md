@@ -4,4 +4,8 @@
 
 Deploy your resources with the button below
 
+**!Right-click and open the link in a new tab so you can return here for step 2!**
+
 [![Deploy to Azure](https://azuredeploy.net/deploybutton.png)](https://azuredeploy.net/)
+
+Proceed to [Step Two](../2/README.md)
