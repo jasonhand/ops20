@@ -1,21 +1,21 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
         "connections_teams_name": {
             "defaultValue": "teams",
             "type": "String"
         },
-        "workflows_ops200bb5_name": {
-            "defaultValue": "ops200bb5",
+        "workflows_ops20demoxy_name": {
+            "defaultValue": "ops20demoxy",
             "type": "String"
         },
         "connections_azuretables_name": {
             "defaultValue": "azuretables",
             "type": "String"
         },
-        "storageAccounts_ops200bb5_name": {
-            "defaultValue": "ops200bb5",
+        "storageAccounts_ops20demoxy_name": {
+            "defaultValue": "ops20demoxy",
             "type": "String"
         },
         "connections_visualstudioteamservices_name": {
@@ -28,7 +28,7 @@
         {
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2019-04-01",
-            "name": "[parameters('storageAccounts_ops200bb5_name')]",
+            "name": "[parameters('storageAccounts_ops20demoxy_name')]",
             "location": "eastus",
             "sku": {
                 "name": "Standard_RAGRS",
@@ -99,9 +99,9 @@
         {
             "type": "Microsoft.Storage/storageAccounts/blobServices",
             "apiVersion": "2019-04-01",
-            "name": "[concat(parameters('storageAccounts_ops200bb5_name'), '/default')]",
+            "name": "[concat(parameters('storageAccounts_ops20demoxy_name'), '/default')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_ops200bb5_name'))]"
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_ops20demoxy_name'))]"
             ],
             "sku": {
                 "name": "Standard_RAGRS"
@@ -118,7 +118,7 @@
         {
             "type": "Microsoft.Logic/workflows",
             "apiVersion": "2017-07-01",
-            "name": "[parameters('workflows_ops200bb5_name')]",
+            "name": "[parameters('workflows_ops20demoxy_name')]",
             "location": "westus",
             "dependsOn": [
                 "[resourceId('Microsoft.Web/connections', parameters('connections_azuretables_name'))]",
@@ -312,38 +312,6 @@
                                 }
                             }
                         },
-                        "For_each": {
-                            "foreach": "@body('Parse_JSON')",
-                            "actions": {
-                                "Update_a_work_item_2": {
-                                    "runAfter": {},
-                                    "type": "ApiConnection",
-                                    "inputs": {
-                                        "body": {
-                                            "userEnteredFields": {
-                                                "Assigned To": "@items('For_each')['email']"
-                                            }
-                                        },
-                                        "host": {
-                                            "connection": {
-                                                "name": "@parameters('$connections')['visualstudioteamservices']['connectionId']"
-                                            }
-                                        },
-                                        "method": "patch",
-                                        "path": "/_apis/wit/workitems/@{encodeURIComponent(body('Update_a_work_item')?['id'])}",
-                                        "queries": {
-                                            "account": "[parameters('workflows_ops200bb5_name')]"
-                                        }
-                                    }
-                                }
-                            },
-                            "runAfter": {
-                                "Parse_JSON": [
-                                    "Succeeded"
-                                ]
-                            },
-                            "type": "Foreach"
-                        },
                         "Get_entities": {
                             "runAfter": {
                                 "Update_a_work_item": [
@@ -396,7 +364,7 @@
                         },
                         "Post_a_message_as_the_Flow_bot_to_a_channel": {
                             "runAfter": {
-                                "For_each": [
+                                "Parse_JSON": [
                                     "Succeeded"
                                 ]
                             },
@@ -425,7 +393,7 @@
                             "type": "Response",
                             "kind": "Http",
                             "inputs": {
-                                "body": "OPS20 - Responding To Incidents Demo 1 - Last one tonight",
+                                "body": "OPS20 - Responding To Incidents Demo 1",
                                 "statusCode": 200
                             }
                         },
