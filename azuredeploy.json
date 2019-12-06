@@ -4,31 +4,34 @@
     "parameters": {
         "connections_teams_name": {
             "defaultValue": "teams",
+            "type": "String",
+            "metadata": {
+			"description": "MS Teams Connection Name - DO NOT CHANGE"
+            }
+        },
+        "logicApp": {
+            "defaultValue": "null",
             "type": "String"
         },
-        "workflows_ops200bb5a_name": {
-            "defaultValue": "ops200bb5a",
+        "tableConnectionName": {
+            "defaultValue": "azuretables",
             "type": "String"
         },
-        "connections_azuretables_1_name": {
-            "defaultValue": "azuretables-1",
+        "storageAccountName": {
+            "defaultValue": "null",
             "type": "String"
         },
-        "storageAccounts_ops200bb5a_name": {
-            "defaultValue": "ops200bb5a",
-            "type": "String"
-        },
-        "connections_visualstudioteamservices_name": {
+        "devopsConnectionName": {
             "defaultValue": "visualstudioteamservices",
             "type": "String"
         },
-        "azureDevOpsOrgName": {
+        "azureDevopsOrgName": {
 			"type": "string",
 			"metadata": {
 			"description": "Azure DevOps organiztion name."
 			}
 		},
-		"azureDevOpsProject": {
+		"azureDevopsProject": {
 			"type": "string",
 			"metadata": {
 			"description": "Name of the Azure DevOps Project."
@@ -40,7 +43,7 @@
         {
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2019-04-01",
-            "name": "[parameters('storageAccounts_ops200bb5a_name')]",
+            "name": "[parameters('storageAccountName')]",
             "location": "eastus",
             "sku": {
                 "name": "Standard_RAGRS",
@@ -72,7 +75,7 @@
         {
             "type": "Microsoft.Web/connections",
             "apiVersion": "2016-06-01",
-            "name": "[parameters('connections_azuretables_1_name')]",
+            "name": "[parameters('tableConnectionName')]",
             "location": "westus",
             "properties": {
                 "displayName": "oncall",
@@ -83,20 +86,20 @@
             }
         },
         {
-		"name": "[parameters('azureDevOpsOrgName')]",
+		"name": "[parameters('azureDevopsOrgName')]",
 		"type": "microsoft.visualstudio/account",
 		"apiVersion": "2014-04-01-preview",
 		"location": "centralus",
 		"properties": {
 			"operationType": "Create",
-			"accountName": "[parameters('azureDevOpsOrgName')]"
+			"accountName": "[parameters('azureDevopsOrgName')]"
 		},
 		"resources": [{
-			"name": "[parameters('azureDevOpsProject')]",
+			"name": "[parameters('azureDevopsProject')]",
 			"type": "project",
 			"apiVersion": "2014-04-01-preview",
 			"dependsOn": [
-				"[concat('microsoft.visualstudio/account/', parameters('azureDevOpsOrgName'))]"
+				"[concat('microsoft.visualstudio/account/', parameters('azureDevopsOrgName'))]"
 			],
 			"location": "centralus",
 			"properties": {
@@ -120,22 +123,22 @@
         {
             "type": "Microsoft.Web/connections",
             "apiVersion": "2016-06-01",
-            "name": "[parameters('connections_visualstudioteamservices_name')]",
+            "name": "[parameters('devopsConnectionName')]",
             "location": "westus",
             "properties": {
                 "displayName": "jahand@microsoft.com",
                 "customParameterValues": {},
                 "api": {
-                    "id": "[concat('/subscriptions/5a8d1e52-ed1a-4ec6-a9e3-3995093ff6a0/providers/Microsoft.Web/locations/westus/managedApis/', parameters('connections_visualstudioteamservices_name'))]"
+                    "id": "[concat('/subscriptions/5a8d1e52-ed1a-4ec6-a9e3-3995093ff6a0/providers/Microsoft.Web/locations/westus/managedApis/', parameters('devopsConnectionName'))]"
                 }
             }
         },
         {
             "type": "Microsoft.Storage/storageAccounts/blobServices",
             "apiVersion": "2019-04-01",
-            "name": "[concat(parameters('storageAccounts_ops200bb5a_name'), '/default')]",
+            "name": "[concat(parameters('storageAccountName'), '/default')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_ops200bb5a_name'))]"
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
             ],
             "sku": {
                 "name": "Standard_RAGRS"
@@ -152,12 +155,12 @@
         {
             "type": "Microsoft.Logic/workflows",
             "apiVersion": "2017-07-01",
-            "name": "[parameters('workflows_ops200bb5a_name')]",
+            "name": "[parameters('logicApp')]",
             "location": "westus",
             "dependsOn": [
-                "[resourceId('Microsoft.Web/connections', parameters('connections_azuretables_1_name'))]",
+                "[resourceId('Microsoft.Web/connections', parameters('tableConnectionName'))]",
                 "[resourceId('Microsoft.Web/connections', parameters('connections_teams_name'))]",
-                "[resourceId('Microsoft.Web/connections', parameters('connections_visualstudioteamservices_name'))]"
+                "[resourceId('Microsoft.Web/connections', parameters('devopsConnectionName'))]"
             ],
             "properties": {
                 "state": "Enabled",
@@ -342,7 +345,7 @@
                                 "method": "patch",
                                 "path": "/@{encodeURIComponent('ops200bb5')}/_apis/wit/workitems/$@{encodeURIComponent('Issue')}",
                                 "queries": {
-                                    "account": "ops200bb5"
+                                    "account": "[parameters('azureDevopsOrgName')]"
                                 }
                             }
                         },
@@ -366,7 +369,7 @@
                                         "method": "patch",
                                         "path": "/_apis/wit/workitems/@{encodeURIComponent(body('Update_a_work_item')?['id'])}",
                                         "queries": {
-                                            "account": "ops200bb5"
+                                            "account": "[parameters('azureDevopsOrgName')]"
                                         }
                                     }
                                 }
@@ -473,7 +476,7 @@
                             "inputs": {
                                 "body": {
                                     "userEnteredFields": {
-                                        "Description": "<a href=\"https://teams.microsoft.com/l/channel/@{body('Create_a_channel')?['id']}/Active%2520Incident%2520@{body('Create_a_work_item')?['id']}?groupId=042fcb78-dd7d-4300-84c2-1515890c1697&tenantId=72f988bf-86f1-41af-91ab-2d7cd011db47\">Communications Channel</a>"
+                                        "Description": "<a href=\"https://teams.microsoft.com/l/0channel/@{body('Create_a_channel')?['id']}/Active%2520Incident%2520@{body('Create_a_work_item')?['id']}?groupId=042fcb78-dd7d-4300-84c2-1515890c1697&tenantId=72f988bf-86f1-41af-91ab-2d7cd011db47\">Communications Channel</a>"
                                     }
                                 },
                                 "host": {
@@ -484,8 +487,8 @@
                                 "method": "patch",
                                 "path": "/_apis/wit/workitems/@{encodeURIComponent(body('Create_a_work_item')?['id'])}",
                                 "queries": {
-                                    "account": "ops200bb5",
-                                    "project": "shenzhenops20test"
+                                    "account": "[parameters('azureDevopsOrgName')]",
+                                    "project": "[parameters('azureDevopsOrgName')]"
                                 }
                             }
                         }
@@ -496,8 +499,8 @@
                     "$connections": {
                         "value": {
                             "azuretables_1": {
-                                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('connections_azuretables_1_name'))]",
-                                "connectionName": "azuretables-1",
+                                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('tableConnectionName'))]",
+                                "connectionName": "azuretables",
                                 "id": "/subscriptions/5a8d1e52-ed1a-4ec6-a9e3-3995093ff6a0/providers/Microsoft.Web/locations/westus/managedApis/azuretables"
                             },
                             "teams": {
@@ -506,7 +509,7 @@
                                 "id": "/subscriptions/5a8d1e52-ed1a-4ec6-a9e3-3995093ff6a0/providers/Microsoft.Web/locations/westus/managedApis/teams"
                             },
                             "visualstudioteamservices": {
-                                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('connections_visualstudioteamservices_name'))]",
+                                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('devopsConnectionName'))]",
                                 "connectionName": "visualstudioteamservices",
                                 "id": "/subscriptions/5a8d1e52-ed1a-4ec6-a9e3-3995093ff6a0/providers/Microsoft.Web/locations/westus/managedApis/visualstudioteamservices"
                             }
