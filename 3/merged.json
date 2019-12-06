@@ -36,7 +36,6 @@
 			"properties": {
 				"versionControlOption": "Git"
 			},
-        
             "resources": [
                 {
                 "type": "Microsoft.Resources/deployments",
