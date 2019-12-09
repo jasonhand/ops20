@@ -16,7 +16,8 @@
         }
     },
     "variables": {
-		"rgname": "[resourceGroup().name]",
+		"name": "ops20main",
+        "rgname": "[resourceGroup().name]",
 		"statusPageName": "[concat('status-',uniqueString(resourceGroup().id))]",
         "azureDevopsOrgName": "[resourceGroup().name]",
         "azureDevopsProject": "[resourceGroup().name]",
@@ -25,6 +26,7 @@
         "devopsConnectionName": "visualstudioteamservices",
         "connections_teams_name": "teams",
         "tableConnectionName": "azuretables",
+        "location": "westus",
         "singleQuote": "'"
     },
     "resources": [
@@ -32,7 +34,7 @@
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2019-04-01",
             "name": "[variables('storageAccountName')]",
-            "location": "westus",
+            "location": "[variables('location')]",
             "sku": {
                 "name": "Standard_RAGRS",
                 "tier": "Standard"
@@ -61,19 +63,6 @@
             }
         },
         {
-            "type": "Microsoft.Web/connections",
-            "apiVersion": "2016-06-01",
-            "name": "[variables('tableConnectionName')]",
-            "location": "westus",
-            "properties": {
-                "displayName": "oncall",
-                "customParameterValues": {},
-                "api": {
-                    "id": "/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/westus/managedApis/azuretables"
-                }
-            }
-        },
-        {
 		"name": "[variables('azureDevopsOrgName')]",
 		"type": "microsoft.visualstudio/account",
 		"apiVersion": "2014-04-01-preview",
@@ -89,7 +78,7 @@
 			"dependsOn": [
 				"[concat('microsoft.visualstudio/account/', variables('azureDevopsOrgName'))]"
 			],
-			"location": "westus",
+			"location": "[variables('location')]",
 			"properties": {
 				"versionControlOption": "Git"
 			}
@@ -99,7 +88,7 @@
             "type": "Microsoft.Web/connections",
             "apiVersion": "2016-06-01",
             "name": "[variables('connections_teams_name')]",
-            "location": "westus",
+            "location": "[variables('location')]",
             "properties": {
                 "displayName": "[parameters('userEmail')]",
                 "customParameterValues": {},
@@ -112,7 +101,7 @@
             "type": "Microsoft.Web/connections",
             "apiVersion": "2016-06-01",
             "name": "[variables('devopsConnectionName')]",
-            "location": "westus",
+            "location": "[variables('location')]",
             "properties": {
                 "displayName": "[parameters('userEmail')]",
                 "customParameterValues": {},
@@ -141,10 +130,23 @@
             }
         },
         {
+            "type": "Microsoft.Web/connections",
+            "apiVersion": "2016-06-01",
+            "name": "[variables('tableConnectionName')]",
+            "location": "[variables('location')]",
+            "properties": {
+                "displayName": "oncall",
+                "customParameterValues": {},
+                "api": {
+                    "id": "[concat('subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/azuretables')]"
+                }
+            }
+        },
+        {
             "type": "Microsoft.Logic/workflows",
             "apiVersion": "2017-07-01",
             "name": "[variables('logicApp')]",
-            "location": "westus",
+            "location": "[variables('location')]",
             "dependsOn": [
                 "[resourceId('Microsoft.Web/connections', variables('tableConnectionName'))]",
                 "[resourceId('Microsoft.Web/connections', variables('connections_teams_name'))]",
@@ -428,7 +430,7 @@
                             "type": "ApiConnection",
                             "inputs": {
                                 "body": {
-                                    "messageBody": "<img src=\"https://thumbs.gfycat.com/DelayedVacantDassie-max-1mb.gif\" alt=\"Alert\" height=\"42\" width=\"42\"> <br />\n\n<a href=\"https://shenzhenops20test.visualstudio.com/shenzhenops20test/_workitems/edit/@{body('Update_a_work_item')?['id']}/\">Incident @{body('Update_a_work_item')?['id']}</a><br />\n<br />\n\n@{triggerBody()?['alertContext']?['AlertType']} : @{triggerBody()?['alertContext']?['SeverityDescription']}<br />\n<br />",
+                                    "messageBody": "<img src=\"https://globaleventcdn.blob.core.windows.net/assets/ops/ops20/screenshots/alert.gif\" alt=\"Alert\" height=\"42\" width=\"42\"> <br />\n\n<a href=\"https://shenzhenops20test.visualstudio.com/shenzhenops20test/_workitems/edit/@{body('Update_a_work_item')?['id']}/\">Incident @{body('Update_a_work_item')?['id']}</a><br />\n<br />\n\n@{triggerBody()?['alertContext']?['AlertType']} : @{triggerBody()?['alertContext']?['SeverityDescription']}<br />\n<br />",
                                     "recipient": {
                                         "channelId": "@body('Create_a_channel')?['id']"
                                     }
@@ -441,7 +443,7 @@
                                 "method": "post",
                                 "path": "/flowbot/actions/notification/recipienttypes/channel",
                                 "queries": {
-                                    "groupId": "5053167b-f5fb-4b5d-95b1-e256b1bcfcdb"
+                                    "groupId": "[parameters('teamsID')]"
                                 }
                             }
                         },
@@ -486,22 +488,22 @@
                 "parameters": {
                     "$connections": {
                         "value": {
-                            "azuretables_1": {
-                                "connectionId": "[resourceId('Microsoft.Web/connections', variables('tableConnectionName'))]",
-                                "connectionName": "azuretables",
-                                "id": "/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/westus/managedApis/azuretables"
-                            },
                             "teams": {
-                                "connectionId": "[resourceId('Microsoft.Web/connections', variables('connections_teams_name'))]",
-                                "connectionName": "teams",
-                                "id": "/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/westus/managedApis/teams"
-                            },
-                            "visualstudioteamservices": {
-                                "connectionId": "[resourceId('Microsoft.Web/connections', variables('devopsConnectionName'))]",
-                                "connectionName": "visualstudioteamservices",
-                                "id": "/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/westus/managedApis/visualstudioteamservices"
-                            }
-                        }
+								"connectionId": "[concat('subscriptions/', subscription().subscriptionId, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Web/connections/teams')]",
+								"connectionName": "teams",
+								"id": "[concat('subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/teams')]"
+							},
+							"azuretables": {
+								"connectionId": "[concat('subscriptions/', subscription().subscriptionId, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Web/connections/azuretables')]",
+								"connectionName": "azuretables",
+								"id": "[concat('subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/azuretables')]"
+							},
+							"visualstudioteamservices": {
+								"connectionId": "[concat('subscriptions/', subscription().subscriptionId, '/resourceGroups/', resourceGroup().name, '/providers/Microsoft.Web/connections/visualstudioteamservices')]",
+								"connectionName": "visualstudioteamservices",
+								"id": "[concat('subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/visualstudioteamservices')]"
+							}
+                        }    
                     }
                 }
             }
