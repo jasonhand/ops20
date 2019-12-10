@@ -313,7 +313,7 @@
                                     }
                                 },
                                 "method": "post",
-                                "path": "/beta/groups/@{encodeURIComponent('5053167b-f5fb-4b5d-95b1-e256b1bcfcdb')}/channels"
+                                "path": "/beta/groups/@{encodeURIComponent('change_me')}/channels"
                             }
                         },
                         "Create_a_work_item": {
@@ -430,7 +430,7 @@
                             "type": "ApiConnection",
                             "inputs": {
                                 "body": {
-                                    "messageBody": "<img src=\"https://globaleventcdn.blob.core.windows.net/assets/ops/ops20/screenshots/alert.gif\" alt=\"Alert\" height=\"42\" width=\"42\"> <br />\n\n<a href=\"https://shenzhenops20test.visualstudio.com/shenzhenops20test/_workitems/edit/@{body('Update_a_work_item')?['id']}/\">Incident @{body('Update_a_work_item')?['id']}</a><br />\n<br />\n\n@{triggerBody()?['alertContext']?['AlertType']} : @{triggerBody()?['alertContext']?['SeverityDescription']}<br />\n<br />",
+                                    "messageBody": "[concat('<img src=\"https://thumbs.gfycat.com/DelayedVacantDassie-max-1mb.gif\" alt=\"Alert\" height=\"42\" width=\"42\"> <br />\n\n<a href=\"https://', variables('azureDevopsOrgName'), '.visualstudio.com/', variables('azureDevOpsProject'), '/_workitems/edit/@{body(''Update_a_work_item'')?[''id'']}/\">Incident @{body(''Update_a_work_item'')?[''id'']}</a><br />\n<br />\n\n@{triggerBody()?[''alertContext'']?[''AlertType'']} : @{triggerBody()?[''alertContext'']?[''SeverityDescription'']}<br />\n<br />\n\nTroubleshooting Guide Coming. Please Standby...<br />')]",
                                     "recipient": {
                                         "channelId": "@body('Create_a_channel')?['id']"
                                     }
