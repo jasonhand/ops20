@@ -3,7 +3,6 @@
     "contentVersion": "1.0.0.0",
     "parameters": {},
     "variables": {
-		"rgname": "ops20-responding-to-incidents",
         "rgname": "[resourceGroup().name]",
         "azureDevopsOrgName": "[resourceGroup().name]",
         "azureDevopsProject": "[resourceGroup().name]",
