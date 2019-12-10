@@ -1,21 +1,10 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
-    "parameters": {
-		"userEmail": {
-			"type": "string",
-			"metadata": {
-				"description": "The user email used to authenticate Microsoft Teams and Azure Devops"
-			}
-        },
-        "siteName": {
-			"type": "string"
-		}
-    },
+    "parameters": {},
     "variables": {
-		"name": "ops20main",
+		"siteName": "ops20-responding-to-incidents",
         "rgname": "[resourceGroup().name]",
-		"statusPageName": "[concat('status-',uniqueString(resourceGroup().id))]",
         "azureDevopsOrgName": "[resourceGroup().name]",
         "azureDevopsProject": "[resourceGroup().name]",
         "storageAccountName": "[resourceGroup().name]",
@@ -89,7 +78,7 @@
             "name": "[variables('connections_teams_name')]",
             "location": "[variables('location')]",
             "properties": {
-                "displayName": "[parameters('userEmail')]",
+                "displayName": "[variables('siteName')]",
                 "customParameterValues": {},
                 "api": {
                     "id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/westus/managedApis/', variables('connections_teams_name'))]"
@@ -102,7 +91,7 @@
             "name": "[variables('devopsConnectionName')]",
             "location": "[variables('location')]",
             "properties": {
-                "displayName": "[parameters('userEmail')]",
+                "displayName": "[variables('siteName')]",
                 "customParameterValues": {},
                 "api": {
                     "id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/westus/managedApis/', variables('devopsConnectionName'))]"
@@ -508,7 +497,7 @@
             }
         },
         {
-			"name": "[parameters('siteName')]",
+			"name": "[variables('siteName')]",
 			"type": "Microsoft.Web/sites",
 			"properties": {
 				"siteConfig": {
@@ -534,7 +523,7 @@
 						},
 						{
 							"name": "WEBSITE_CONTENTSHARE",
-							"value": "[concat(toLower(parameters('siteName')), '994d')]"
+							"value": "[concat(toLower(variables('siteName')), '994d')]"
 						},
 						{
 							"name": "WEBSITE_NODE_DEFAULT_VERSION",
@@ -542,15 +531,15 @@
 						},
 						{
 							"name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-							"value": "[reference(concat('microsoft.insights/components/', parameters('siteName')), '2015-05-01').InstrumentationKey]"
+							"value": "[reference(concat('microsoft.insights/components/', variables('siteName')), '2015-05-01').InstrumentationKey]"
 						},
 						{
 							"name": "AzureSignalRConnectionString",
-							"value": "[listKeys(concat('Microsoft.SignalRService/SignalR/', parameters('siteName')), '2018-10-01').primaryConnectionString]"
+							"value": "[listKeys(concat('Microsoft.SignalRService/SignalR/', variables('siteName')), '2018-10-01').primaryConnectionString]"
 						}
 					]
 				},
-				"name": "[parameters('siteName')]",
+				"name": "[variables('siteName')]",
 				"clientAffinityEnabled": false,
 				"reserved": false
 			},
@@ -559,7 +548,7 @@
 				"name": "web",
 				"type": "sourcecontrols",
 				"dependsOn": [
-					"[resourceId('Microsoft.Web/Sites', parameters('siteName'))]"
+					"[resourceId('Microsoft.Web/Sites', variables('siteName'))]"
 				],
 				"properties": {
 					"RepoUrl": "[variables('repoURL')]",
@@ -568,8 +557,8 @@
 				}
 			}],
 			"dependsOn": [
-				"[resourceId('microsoft.insights/components', parameters('siteName'))]",
-				"[resourceId('Microsoft.SignalRService/SignalR', parameters('siteName'))]"
+				"[resourceId('microsoft.insights/components', variables('siteName'))]",
+				"[resourceId('Microsoft.SignalRService/SignalR', variables('siteName'))]"
 			],
 			"apiVersion": "2016-03-01",
 			"location": "Central US",
@@ -577,21 +566,21 @@
 		},
         {
 			"apiVersion": "2015-05-01",
-			"name": "[parameters('siteName')]",
+			"name": "[variables('siteName')]",
 			"type": "microsoft.insights/components",
 			"location": "centralus",
 			"properties": {
-				"ApplicationId": "[parameters('siteName')]",
+				"ApplicationId": "[variables('siteName')]",
 				"Request_Source": "IbizaWebAppExtensionCreate"
 			}
 		},
         {
 			"type": "Microsoft.SignalRService/SignalR",
-			"name": "[parameters('siteName')]",
+			"name": "[variables('siteName')]",
 			"apiVersion": "2018-10-01",
 			"location": "[variables('location')]",
 			"properties": {
-				"hostNamePrefix": "[parameters('siteName')]",
+				"hostNamePrefix": "[variables('siteName')]",
 				"features": [{
 					"flag": "ServiceMode",
 					"value": "Serverless"
