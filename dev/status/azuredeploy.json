@@ -430,7 +430,7 @@
                                 "method": "post",
                                 "path": "/flowbot/actions/notification/recipienttypes/channel",
                                 "queries": {
-                                    "groupId": "teamsgroup"
+                                    "groupId": "change_me"
                                 }
                             }
                         },
