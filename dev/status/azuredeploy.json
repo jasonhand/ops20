@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {},
     "variables": {
-		"siteName": "ops20-responding-to-incidents",
+		"rgname": "ops20-responding-to-incidents",
         "rgname": "[resourceGroup().name]",
         "azureDevopsOrgName": "[resourceGroup().name]",
         "azureDevopsProject": "[resourceGroup().name]",
@@ -78,7 +78,7 @@
             "name": "[variables('connections_teams_name')]",
             "location": "[variables('location')]",
             "properties": {
-                "displayName": "[variables('siteName')]",
+                "displayName": "[variables('rgname')]",
                 "customParameterValues": {},
                 "api": {
                     "id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/westus/managedApis/', variables('connections_teams_name'))]"
@@ -91,7 +91,7 @@
             "name": "[variables('devopsConnectionName')]",
             "location": "[variables('location')]",
             "properties": {
-                "displayName": "[variables('siteName')]",
+                "displayName": "[variables('rgname')]",
                 "customParameterValues": {},
                 "api": {
                     "id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/westus/managedApis/', variables('devopsConnectionName'))]"
@@ -497,7 +497,7 @@
             }
         },
         {
-			"name": "[variables('siteName')]",
+			"name": "[variables('rgname')]",
 			"type": "Microsoft.Web/sites",
 			"properties": {
 				"siteConfig": {
@@ -523,7 +523,7 @@
 						},
 						{
 							"name": "WEBSITE_CONTENTSHARE",
-							"value": "[concat(toLower(variables('siteName')), '994d')]"
+							"value": "[concat(toLower(variables('rgname')), '994d')]"
 						},
 						{
 							"name": "WEBSITE_NODE_DEFAULT_VERSION",
@@ -531,15 +531,15 @@
 						},
 						{
 							"name": "APPINSIGHTS_INSTRUMENTATIONKEY",
-							"value": "[reference(concat('microsoft.insights/components/', variables('siteName')), '2015-05-01').InstrumentationKey]"
+							"value": "[reference(concat('microsoft.insights/components/', variables('rgname')), '2015-05-01').InstrumentationKey]"
 						},
 						{
 							"name": "AzureSignalRConnectionString",
-							"value": "[listKeys(concat('Microsoft.SignalRService/SignalR/', variables('siteName')), '2018-10-01').primaryConnectionString]"
+							"value": "[listKeys(concat('Microsoft.SignalRService/SignalR/', variables('rgname')), '2018-10-01').primaryConnectionString]"
 						}
 					]
 				},
-				"name": "[variables('siteName')]",
+				"name": "[variables('rgname')]",
 				"clientAffinityEnabled": false,
 				"reserved": false
 			},
@@ -548,7 +548,7 @@
 				"name": "web",
 				"type": "sourcecontrols",
 				"dependsOn": [
-					"[resourceId('Microsoft.Web/Sites', variables('siteName'))]"
+					"[resourceId('Microsoft.Web/Sites', variables('rgname'))]"
 				],
 				"properties": {
 					"RepoUrl": "[variables('repoURL')]",
@@ -557,8 +557,8 @@
 				}
 			}],
 			"dependsOn": [
-				"[resourceId('microsoft.insights/components', variables('siteName'))]",
-				"[resourceId('Microsoft.SignalRService/SignalR', variables('siteName'))]"
+				"[resourceId('microsoft.insights/components', variables('rgname'))]",
+				"[resourceId('Microsoft.SignalRService/SignalR', variables('rgname'))]"
 			],
 			"apiVersion": "2016-03-01",
 			"location": "Central US",
@@ -566,21 +566,21 @@
 		},
         {
 			"apiVersion": "2015-05-01",
-			"name": "[variables('siteName')]",
+			"name": "[variables('rgname')]",
 			"type": "microsoft.insights/components",
 			"location": "centralus",
 			"properties": {
-				"ApplicationId": "[variables('siteName')]",
+				"ApplicationId": "[variables('rgname')]",
 				"Request_Source": "IbizaWebAppExtensionCreate"
 			}
 		},
         {
 			"type": "Microsoft.SignalRService/SignalR",
-			"name": "[variables('siteName')]",
+			"name": "[variables('rgname')]",
 			"apiVersion": "2018-10-01",
 			"location": "[variables('location')]",
 			"properties": {
-				"hostNamePrefix": "[variables('siteName')]",
+				"hostNamePrefix": "[variables('rgname')]",
 				"features": [{
 					"flag": "ServiceMode",
 					"value": "Serverless"
