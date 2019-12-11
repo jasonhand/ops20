@@ -1,18 +1,9 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
-    "parameters": {
-		"userEmail": {
-			"type": "string",
-			"metadata": {
-				"description": "The user email used to authenticate Microsoft Teams and Azure Devops"
-			}
-        }
-    },
+    "parameters": {},
     "variables": {
-		"name": "ops20main",
         "rgname": "[resourceGroup().name]",
-		"statusPageName": "[concat('status-',uniqueString(resourceGroup().id))]",
         "azureDevopsOrgName": "[resourceGroup().name]",
         "azureDevopsProject": "[resourceGroup().name]",
         "storageAccountName": "[resourceGroup().name]",
@@ -21,6 +12,8 @@
         "connections_teams_name": "teams",
         "tableConnectionName": "azuretables",
         "location": "westus",
+        "repoUrl": "https://github.com/Azure-Samples/functions-teams-incident-status-page-bot.git",
+        "branch": "master",
         "singleQuote": "'"
     },
     "resources": [
@@ -84,7 +77,7 @@
             "name": "[variables('connections_teams_name')]",
             "location": "[variables('location')]",
             "properties": {
-                "displayName": "[parameters('userEmail')]",
+                "displayName": "[variables('rgname')]",
                 "customParameterValues": {},
                 "api": {
                     "id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/westus/managedApis/', variables('connections_teams_name'))]"
@@ -97,7 +90,7 @@
             "name": "[variables('devopsConnectionName')]",
             "location": "[variables('location')]",
             "properties": {
-                "displayName": "[parameters('userEmail')]",
+                "displayName": "[variables('rgname')]",
                 "customParameterValues": {},
                 "api": {
                     "id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/westus/managedApis/', variables('devopsConnectionName'))]"
@@ -437,7 +430,7 @@
                                 "method": "post",
                                 "path": "/flowbot/actions/notification/recipienttypes/channel",
                                 "queries": {
-                                    "groupId": "teamsgroup"
+                                    "groupId": "change_me"
                                 }
                             }
                         },
@@ -501,6 +494,102 @@
                     }
                 }
             }
-        }
+        },
+        {
+			"name": "[variables('rgname')]",
+			"type": "Microsoft.Web/sites",
+			"properties": {
+				"siteConfig": {
+					"appSettings": [{
+							"name": "PROJECT",
+							"value": "src/functions-javascript"
+						},
+						{
+							"name": "FUNCTIONS_WORKER_RUNTIME",
+							"value": "node"
+						},
+						{
+							"name": "AzureWebJobsStorage",
+							"value": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('storageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2015-05-01-preview').key1)]"
+						},
+						{
+							"name": "FUNCTIONS_EXTENSION_VERSION",
+							"value": "~2"
+						},
+						{
+							"name": "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING",
+							"value": "[concat('DefaultEndpointsProtocol=https;AccountName=',variables('storageAccountName'),';AccountKey=',listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2015-05-01-preview').key1)]"
+						},
+						{
+							"name": "WEBSITE_CONTENTSHARE",
+							"value": "[concat(toLower(variables('rgname')), '994d')]"
+						},
+						{
+							"name": "WEBSITE_NODE_DEFAULT_VERSION",
+							"value": "10.14.1"
+						},
+						{
+							"name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+							"value": "[reference(concat('microsoft.insights/components/', variables('rgname')), '2015-05-01').InstrumentationKey]"
+						},
+						{
+							"name": "AzureSignalRConnectionString",
+							"value": "[listKeys(concat('Microsoft.SignalRService/SignalR/', variables('rgname')), '2018-10-01').primaryConnectionString]"
+						}
+					]
+				},
+				"name": "[variables('rgname')]",
+				"clientAffinityEnabled": false,
+				"reserved": false
+			},
+			"resources": [{
+				"apiVersion": "2015-08-01",
+				"name": "web",
+				"type": "sourcecontrols",
+				"dependsOn": [
+					"[resourceId('Microsoft.Web/Sites', variables('rgname'))]"
+				],
+				"properties": {
+					"RepoUrl": "[variables('repoURL')]",
+					"branch": "[variables('branch')]",
+					"IsManualIntegration": true
+				}
+			}],
+			"dependsOn": [
+				"[resourceId('microsoft.insights/components', variables('rgname'))]",
+				"[resourceId('Microsoft.SignalRService/SignalR', variables('rgname'))]"
+			],
+			"apiVersion": "2016-03-01",
+			"location": "Central US",
+			"kind": "functionapp"
+		},
+        {
+			"apiVersion": "2015-05-01",
+			"name": "[variables('rgname')]",
+			"type": "microsoft.insights/components",
+			"location": "centralus",
+			"properties": {
+				"ApplicationId": "[variables('rgname')]",
+				"Request_Source": "IbizaWebAppExtensionCreate"
+			}
+		},
+        {
+			"type": "Microsoft.SignalRService/SignalR",
+			"name": "[variables('rgname')]",
+			"apiVersion": "2018-10-01",
+			"location": "[variables('location')]",
+			"properties": {
+				"hostNamePrefix": "[variables('rgname')]",
+				"features": [{
+					"flag": "ServiceMode",
+					"value": "Serverless"
+				}]
+			},
+			"sku": {
+				"name": "Free_F1",
+				"tier": "Free",
+				"capacity": "1"
+			}
+		}
     ]
 }
