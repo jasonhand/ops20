@@ -49,6 +49,19 @@
                 "accessTier": "Hot"
             }
         },
+            {
+            "type": "Microsoft.Web/connections",
+            "apiVersion": "2016-06-01",
+            "name": "[variables('connections_teams_name')]",
+            "location": "[variables('location')]",
+            "properties": {
+                "displayName": "[variables('rgname')]",
+                "customParameterValues": {},
+                "api": {
+                    "id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/westus/managedApis/', variables('connections_teams_name'))]"
+                }
+            }
+        },
         {
 		"name": "[variables('azureDevopsOrgName')]",
 		"type": "microsoft.visualstudio/account",
@@ -71,19 +84,6 @@
 			}
 		}]
 	},
-        {
-            "type": "Microsoft.Web/connections",
-            "apiVersion": "2016-06-01",
-            "name": "[variables('connections_teams_name')]",
-            "location": "[variables('location')]",
-            "properties": {
-                "displayName": "[variables('rgname')]",
-                "customParameterValues": {},
-                "api": {
-                    "id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/westus/managedApis/', variables('connections_teams_name'))]"
-                }
-            }
-        },
         {
             "type": "Microsoft.Web/connections",
             "apiVersion": "2016-06-01",
@@ -490,6 +490,7 @@
 								"connectionName": "visualstudioteamservices",
 								"id": "[concat('subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/visualstudioteamservices')]"
 							}
+
                         }    
                     }
                 }
