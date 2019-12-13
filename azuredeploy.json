@@ -92,11 +92,25 @@
                                 "path": "/Tables/@{encodeURIComponent(body('Create_table')?['TableName'])}/entities"
                             }
                         },
-                        "Create_table": {
+                        "Create_oncall_table": {
                             "runAfter": {},
                             "type": "ApiConnection",
                             "inputs": {
                                 "body": "oncall",
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['azuretables']['connectionId']"
+                                    }
+                                },
+                                "method": "post",
+                                "path": "/Tables"
+                            }
+                        },
+                        "Create_statuses_table": {
+                            "runAfter": {},
+                            "type": "ApiConnection",
+                            "inputs": {
+                                "body": "statuses",
                                 "host": {
                                     "connection": {
                                         "name": "@parameters('$connections')['azuretables']['connectionId']"
