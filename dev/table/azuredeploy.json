@@ -1,0 +1,133 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {},
+    "variables": {
+        "LogicAppName":"PopulateTables",
+        "azuretables_connection": "/subscriptions/5a8d1e52-ed1a-4ec6-a9e3-3995093ff6a0/resourceGroups/fullopsdev/providers/Microsoft.Web/connections/azuretables-1"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Logic/workflows",
+            "apiVersion": "2017-07-01",
+            "name": "[variables('LogicAppName')]",
+            "location": "westus",
+            "properties": {
+                "state": "Enabled",
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "$connections": {
+                            "defaultValue": {},
+                            "type": "Object"
+                        }
+                    },
+                    "triggers": {
+                        "manual": {
+                            "type": "Request",
+                            "kind": "Http",
+                            "inputs": {
+                                "schema": {
+                                    "properties": {
+                                        "oncall": {
+                                            "properties": {
+                                                "email": {
+                                                    "type": "string"
+                                                },
+                                                "oncall": {
+                                                    "type": "string"
+                                                },
+                                                "service": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "actions": {
+                        "Add_record": {
+                            "runAfter": {
+                                "Create_table": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "ApiConnection",
+                            "inputs": {
+                                "body": {
+                                    "PartitionKey": "OND",
+                                    "RowKey": "@{rand(1, 30000)}",
+                                    "email": "nobody@microsoft.com",
+                                    "oncall": "false",
+                                    "service": "mobile"
+                                },
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['azuretables']['connectionId']"
+                                    }
+                                },
+                                "method": "post",
+                                "path": "/Tables/@{encodeURIComponent(body('Create_table')?['TableName'])}/entities"
+                            }
+                        },
+                        "Create_table": {
+                            "runAfter": {},
+                            "type": "ApiConnection",
+                            "inputs": {
+                                "body": "oncall@{rand(1, 30000)}",
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['azuretables']['connectionId']"
+                                    }
+                                },
+                                "method": "post",
+                                "path": "/Tables"
+                            }
+                        },
+                        "Put_presenter_on_call": {
+                            "runAfter": {
+                                "Add_record": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "ApiConnection",
+                            "inputs": {
+                                "body": {
+                                    "PartitionKey": "OND",
+                                    "RowKey": "@{rand(1, 30000)}",
+                                    "email": "@{triggerBody()?['oncall']?['email']}",
+                                    "oncall": "true",
+                                    "service": "mobile"
+                                },
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['azuretables']['connectionId']"
+                                    }
+                                },
+                                "method": "post",
+                                "path": "/Tables/@{encodeURIComponent(body('Create_table')?['TableName'])}/entities"
+                            }
+                        }
+                    },
+                    "outputs": {}
+                },
+                "parameters": {
+                    "$connections": {
+                        "value": {
+                            "azuretables": {
+                                "connectionId": "[variables('azuretables_connection')]",
+                                "connectionName": "azuretables-1",
+                                "id": "/subscriptions/5a8d1e52-ed1a-4ec6-a9e3-3995093ff6a0/providers/Microsoft.Web/locations/westus/managedApis/azuretables"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
