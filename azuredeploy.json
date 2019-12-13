@@ -92,7 +92,7 @@
                                 "path": "/Tables/@{encodeURIComponent(body('Create_table')?['TableName'])}/entities"
                             }
                         },
-                        "Create_oncall_table": {
+                        "Create_table": {
                             "runAfter": {},
                             "type": "ApiConnection",
                             "inputs": {
@@ -106,7 +106,7 @@
                                 "path": "/Tables"
                             }
                         },
-                        "Create_statuses_table": {
+                        "Create_table_2": {
                             "runAfter": {},
                             "type": "ApiConnection",
                             "inputs": {
