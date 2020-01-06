@@ -20,7 +20,7 @@
         "repoUrl": "https://github.com/Azure-Samples/functions-teams-incident-status-page-bot.git",
         "branch": "master",
         "LogicAppName":"PopulateTables",
-        "azuretables_connection": "/subscriptions/5a8d1e52-ed1a-4ec6-a9e3-3995093ff6a0/resourceGroups/fullopsdev/providers/Microsoft.Web/connections/azuretables-1",
+        "azuretables_connection": "[concat('/subscriptions/', subscription().subscriptionId, '/resourceGroups/', resourceGroup().name, '/Microsoft.Web/connections/azuretables-1')]",
         "singleQuote": "'"
     },
     "resources": [
@@ -153,7 +153,7 @@
                             "azuretables": {
                                 "connectionId": "[variables('azuretables_connection')]",
                                 "connectionName": "[variables('tableConnectionName')]",
-                                "id": "/subscriptions/5a8d1e52-ed1a-4ec6-a9e3-3995093ff6a0/providers/Microsoft.Web/locations/westus/managedApis/azuretables"
+                                "id": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Web/locations/westus/managedApis/azuretables')]"
                             }
                         }
                     }
